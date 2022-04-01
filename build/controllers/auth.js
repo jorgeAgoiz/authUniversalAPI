@@ -39,32 +39,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.rememberPassword = exports.editProfile = exports.signInUser = exports.signUpUser = void 0;
 var signUpUser = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        console.log("Its working!!");
-        return [2 /*return*/, res.status(200).json({ message: "Starting!!" })];
+        console.log('Its working!!');
+        return [2 /*return*/, res.status(200).json({ message: 'Starting!!' })];
     });
 }); };
 exports.signUpUser = signUpUser;
 var signInUser = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        return [2 /*return*/, res.status(200).json({ message: "Starting!!" })];
+        return [2 /*return*/, res.status(200).json({ message: 'Starting!!' })];
     });
 }); };
 exports.signInUser = signInUser;
 var editProfile = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        return [2 /*return*/, res.status(200).json({ message: "Starting!!" })];
+        return [2 /*return*/, res.status(200).json({ message: 'Starting!!' })];
     });
 }); };
 exports.editProfile = editProfile;
 var rememberPassword = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        return [2 /*return*/, res.status(200).json({ message: "Starting!!" })];
+        return [2 /*return*/, res.status(200).json({ message: 'Starting!!' })];
     });
 }); };
 exports.rememberPassword = rememberPassword;
 var deleteUser = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        return [2 /*return*/, res.status(200).json({ message: "Starting!!" })];
+        return [2 /*return*/, res.status(200).json({ message: 'Starting!!' })];
     });
 }); };
 exports.deleteUser = deleteUser;

@@ -8,7 +8,7 @@ var auth_1 = __importDefault(require("./routes/auth"));
 var app = (0, express_1.default)();
 app.use(auth_1.default);
 app.listen(3012, function () {
-    console.log("Listen on port 3012...");
+    console.log('Listen on port 3012...');
 });
 /* Posible BBDD https://firebase.google.com/docs/firestore/quickstart */ 
 //# sourceMappingURL=index.js.map
