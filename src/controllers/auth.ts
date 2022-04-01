@@ -1,6 +1,9 @@
 import { RequestHandler } from 'express'
-import bcrypt from 'bcrypt'
 import { User } from '../types/auth'
+import bcrypt from 'bcrypt'
+import { db } from '../utils/firebaseDb'
+
+const saltRounds = 12
 
 export const signUpUser: RequestHandler = async (req, res) => {
 	const { email, password, confirmPassword }: User = req.body
@@ -9,11 +12,12 @@ export const signUpUser: RequestHandler = async (req, res) => {
 		if(password !== confirmPassword) {
 			return res.status(404).json({ message: 'Passwords must match' })
 		}
-		return res.status(200).json({ message: 'Starting!!', email, password }) 
+		const hashedPassword: string = await bcrypt.hash(password, saltRounds)
+		const users = await db.collection('users').get()
+		return res.status(200).json({ result: users.docs[0].data() }) 
 	} catch (error: any) {
 		console.log(error)
 	}
-	return res.status(200).json({ message: 'Starting!!' })
 }
 
 
