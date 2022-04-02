@@ -3,6 +3,7 @@ import { LogUser, NewUserDB, NewUser, LogUserDB } from '../types/auth'
 import bcrypt from 'bcrypt'
 import { db } from '../utils/firebaseDb'
 import { FieldValue } from 'firebase-admin/firestore'
+import { createToken, createRefreshToken } from '../utils/jwtAuth'
 
 const usersCollection = db.collection('users')
 
@@ -60,11 +61,16 @@ export const signInUser: RequestHandler = async (req, res) => {
 			email: user.docs[0].data().email,
 			created_at: user.docs[0].data().created_at
 		}
-		const correctPassword: boolean = await bcrypt.compare(password, user.docs[0].data().password)
+		const passwordHashed: string = user.docs[0].data().password
+		const correctPassword: boolean = await bcrypt.compare(password, passwordHashed)
 		if (!correctPassword) {
 			return res.status(401).json({ message: 'Incorrect password' })	
 		}
-		return res.status(200).json({ message: 'Logged', data: userData })
+		// const token: string = createToken(userData.id, userData.email)
+		// const refreshToken: string = createRefreshToken(userData.id, userData.email)
+		// console.log({ token, refreshToken  })
+		
+		return res.status(200).json({ message: 'Logged', token, refreshToken: 'token to refresh' })
 		/* Hay que implementar JWT */
 	} catch (error:any) {
 		return res.status(400).json({ message: error.message })
