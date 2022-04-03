@@ -3,7 +3,7 @@ import { LogUser, NewUserDB, NewUser, LogUserDB } from '../types/auth'
 import bcrypt from 'bcrypt'
 import { db } from '../utils/firebaseDb'
 import { FieldValue } from 'firebase-admin/firestore'
-import { createToken, createRefreshToken } from '../utils/jwtAuth'
+import { createToken } from '../utils/jwtAuth'
 
 const usersCollection = db.collection('users')
 
@@ -67,9 +67,8 @@ export const signInUser: RequestHandler = async (req, res) => {
 			return res.status(401).json({ message: 'Incorrect password' })	
 		}
 		const token: string = createToken(userData.id, userData.email)
-		const refreshToken: string = createRefreshToken(userData.id, userData.email)
 		
-		return res.status(200).json({ message: 'Correct Login', token, refreshToken })
+		return res.status(200).json({ message: 'Correct Login', token })
 	} catch (error:any) {
 		return res.status(400).json({ message: error.message })
 	}
@@ -90,10 +89,13 @@ export const rememberPassword: RequestHandler = async (req, res) => {
 }
 
 export const deleteUser: RequestHandler = async (req, res) => {
-	console.log(req.body.userId)
+	const { id, email } = req.body
+
+	console.log({ id, email })
 	return res.status(200).json({ message: 'Working!!' })
 }
 
 export const getUserBy: RequestHandler = async (req, res) => {
+	/* Continuaremos aqui */
 	return res.status(200).json({ message: 'Starting!!' })
 }
