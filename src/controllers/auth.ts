@@ -54,7 +54,7 @@ export const signInUser: RequestHandler = async (req, res) => {
 		const user: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData> = 
 			await usersCollection.where('email', '==', email).get()
 		if (user.empty) {
-			return res.status(400).json({ message: 'Email incorrect' })
+			return res.status(412).json({ message: 'Email incorrect' })
 		}
 		const userData: LogUserDB = {
 			id: user.docs[0].id,
@@ -66,12 +66,10 @@ export const signInUser: RequestHandler = async (req, res) => {
 		if (!correctPassword) {
 			return res.status(401).json({ message: 'Incorrect password' })	
 		}
-		// const token: string = createToken(userData.id, userData.email)
-		// const refreshToken: string = createRefreshToken(userData.id, userData.email)
-		// console.log({ token, refreshToken  })
+		const token: string = createToken(userData.id, userData.email)
+		const refreshToken: string = createRefreshToken(userData.id, userData.email)
 		
-		return res.status(200).json({ message: 'Logged', token, refreshToken: 'token to refresh' })
-		/* Hay que implementar JWT */
+		return res.status(200).json({ message: 'Correct Login', token, refreshToken })
 	} catch (error:any) {
 		return res.status(400).json({ message: error.message })
 	}
@@ -92,7 +90,8 @@ export const rememberPassword: RequestHandler = async (req, res) => {
 }
 
 export const deleteUser: RequestHandler = async (req, res) => {
-	return res.status(200).json({ message: 'Starting!!' })
+	console.log(req.body.userId)
+	return res.status(200).json({ message: 'Working!!' })
 }
 
 export const getUserBy: RequestHandler = async (req, res) => {
