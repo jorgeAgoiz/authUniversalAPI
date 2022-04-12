@@ -88,14 +88,22 @@ export const rememberPassword: RequestHandler = async (req, res) => {
 	return res.status(200).json({ message: 'Starting!!' })
 }
 
+// Delete User -> "/profile"
 export const deleteUser: RequestHandler = async (req, res) => {
 	const { id, email } = req.body
 
-	console.log({ id, email })
+	try {
+		await usersCollection.doc(id).delete()
+
+		return res.status(200).json({ message: 'User deleted', user: email })
+	} catch (error: any) {
+		return res.status(400).json({ message: error.message })
+	}
+	
 	return res.status(200).json({ message: 'Working!!' })
 }
 
 export const getUserBy: RequestHandler = async (req, res) => {
-	/* Continuaremos aqui */
+	
 	return res.status(200).json({ message: 'Starting!!' })
 }

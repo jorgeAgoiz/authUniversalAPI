@@ -26,7 +26,6 @@ export const verifyToken: RequestHandler = async ( req, res, next ) => {
   
 		const token: string = authorization.substring(7)
 		const decoded: any = jwt.verify(token, SECRET)
-		console.log(decoded)
         
 		const userExists: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
 			await usersCollection.doc(decoded.id).get()
