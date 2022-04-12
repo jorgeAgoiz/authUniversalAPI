@@ -11,7 +11,7 @@ authRouter.post('/profile', verifyToken, rememberPassword)
 authRouter.patch('/profile', verifyToken, editProfile)
 authRouter.delete('/profile', verifyToken, deleteUser)
 
-authRouter.get('/profile', verifyToken, getUserBy)
+authRouter.get('/profile/:id', verifyToken, getUserBy)
 
 
 export default authRouter

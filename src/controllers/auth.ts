@@ -99,11 +99,20 @@ export const deleteUser: RequestHandler = async (req, res) => {
 	} catch (error: any) {
 		return res.status(400).json({ message: error.message })
 	}
-	
-	return res.status(200).json({ message: 'Working!!' })
 }
 
 export const getUserBy: RequestHandler = async (req, res) => {
-	
-	return res.status(200).json({ message: 'Starting!!' })
+	const { id } = req.params
+
+	try {
+		if(!id) {
+			return res.status(412).json({ message: 'Incorrect ID.' })
+		}
+		const myUser: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
+			await usersCollection.doc(`${id}`).get()
+		
+		return res.status(200).json({ message: 'User found.', user: myUser.data() })
+	} catch (error: any) {
+		return res.status(400).json({ message: error.message })
+	}
 }
