@@ -72,12 +72,7 @@ export const signInUser: RequestHandler = async (req, res) => {
 	} catch (error:any) {
 		return res.status(400).json({ message: error.message })
 	}
-
-	
 }
-
-
-
 
 export const editProfile: RequestHandler = async (req, res) => {
 	
@@ -101,6 +96,7 @@ export const deleteUser: RequestHandler = async (req, res) => {
 	}
 }
 
+// Get User By ID -> "/profile/:id"
 export const getUserBy: RequestHandler = async (req, res) => {
 	const { id } = req.params
 
