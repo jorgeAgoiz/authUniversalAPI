@@ -74,17 +74,18 @@ export const signInUser: RequestHandler = async (req, res) => {
 	}
 }
 
+/* En construcción */
 export const editProfile: RequestHandler = async (req, res) => {
-	
 	return res.status(200).json({ message: 'Starting!!' })
 }
 
 export const rememberPassword: RequestHandler = async (req, res) => {
 	return res.status(200).json({ message: 'Starting!!' })
 }
+/* En construcción */
 
 // Delete User -> "/profile"
-export const deleteUser: RequestHandler = async (req, res) => {
+/* export const deleteUser: RequestHandler = async (req, res) => {
 	const { id, email } = req.body
 
 	try {
@@ -94,10 +95,10 @@ export const deleteUser: RequestHandler = async (req, res) => {
 	} catch (error: any) {
 		return res.status(400).json({ message: error.message })
 	}
-}
+} */
 
 // Get User By ID -> "/profile/:id"
-export const getUserBy: RequestHandler = async (req, res) => {
+/* export const getUserBy: RequestHandler = async (req, res) => {
 	const { id } = req.params
 
 	try {
@@ -111,4 +112,4 @@ export const getUserBy: RequestHandler = async (req, res) => {
 	} catch (error: any) {
 		return res.status(400).json({ message: error.message })
 	}
-}
+} */

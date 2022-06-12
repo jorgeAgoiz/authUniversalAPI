@@ -8,5 +8,6 @@ export interface Specie {
     location: string,
     distribution: string,
     feeding: string,
-    picture?: File
+    picture?: string,
+    id?: string
 }
