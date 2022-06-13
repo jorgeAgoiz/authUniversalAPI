@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express'
 import { format } from 'util'
-import { Specie } from '../types/data'
+import { Specie, UpdateSpecie } from '../types/data'
 import { bucket } from '../utils/firebase.storage'
 import { db } from '../utils/firebaseDb'
 
@@ -83,4 +83,75 @@ export const getSpecies: RequestHandler = async ( req, res) => {
 			.json({ message: 'Something went wrong.', error: error.message })
 	}
 
+}
+
+// DELETE -> "/specie/:id" delete a specific specie
+export const deleteSpecie: RequestHandler = async (req, res) => {
+	const specieId: string  = req.params.id
+	try {
+		if (!specieId) {
+			return res.status(412).json({ message: 'Incorrect ID.' })
+		}
+		const mySpecie: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
+			await speciesCollection.doc(`${specieId}`).get()
+
+		if (!mySpecie.exists) {
+			return res.status(412).json({ message: 'Specie not found.' })
+		}
+		await speciesCollection.doc(specieId).delete()
+		
+		return res.status(200).json({ message: 'Deleted successfully.' })
+	} catch (error: any) {
+		return res
+			.status(500)
+			.json({ message: 'Something went wrong.', error: error.message })
+	}
+	
+}
+
+// PATCH -> "/specie" modify a specific specie
+export const editSpecie: RequestHandler = async (req, res) => {
+	const editSpecie: UpdateSpecie = req.body
+	try {
+		if (!editSpecie.id) {
+			return res.status(412).json({ message: 'Must provide an ID.' }) 
+		}
+        
+
+		if (req.file) {
+			console.log('con archivo')
+			const blob = bucket.file(`Especies/${req.file.originalname}`)
+			const blobStream = blob.createWriteStream()
+			blobStream.on('finish', async () => {
+				const publicUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`)
+				editSpecie.picture = publicUrl
+
+				const result = await speciesCollection.doc(editSpecie.id!).update(editSpecie)
+				console.log(result)
+				return res.status(200).json({ message: 'Working, picture updated.' })
+			})
+			blobStream.end(req.file.buffer)
+		} else {
+			console.log('sin archivo')
+			console.log(editSpecie)
+			return res.status(200).json({ message: 'Working, without picture.' })
+		}
+
+	
+		/* 
+     - Comprobar si viene foto
+     - Si viene la subimos a Storage
+     - Añadimos la url al objeto editSpecie
+     - Eliminamos la foto anterior
+     - Actualizamos en firestorage la ficha de especie
+    */
+	
+		/* const result = speciesCollection.doc(editSpecie.id!).update({}) */
+		
+	} catch (error: any) {
+		return res
+			.status(500)
+			.json({ message: 'Something went wrong.', error: error.message })
+	}
+	
 }

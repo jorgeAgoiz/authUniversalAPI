@@ -76,7 +76,14 @@ export const signInUser: RequestHandler = async (req, res) => {
 
 /* En construcción */
 export const editProfile: RequestHandler = async (req, res) => {
-	return res.status(200).json({ message: 'Starting!!' })
+
+	try {
+
+		return res.status(200).json({ message: 'Starting!!' })
+	} catch (error: any) {
+		return res.status(400).json({ message: error.message })
+	}
+	
 }
 
 export const rememberPassword: RequestHandler = async (req, res) => {
