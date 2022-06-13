@@ -3,6 +3,8 @@ import { format } from 'util'
 import { Specie, UpdateSpecie } from '../types/data'
 import { bucket } from '../utils/firebase.storage'
 import { db } from '../utils/firebaseDb'
+import { ref, uploadBytes, deleteObject } from '@firebase/storage'
+import { myStorage } from '../utils/firebaseStorage'
 
 const speciesCollection = db.collection('Species')
 // Implementar a todas las rutas el TOKEN JWT
@@ -10,32 +12,31 @@ const speciesCollection = db.collection('Species')
 // POST -> "/specie" save a specie
 export const saveSpecie: RequestHandler = async (req, res) => {
 	const newSpecie: Specie = req.body
+	const pic: Express.Multer.File | undefined = req.file
+	const metadata = {
+		contentType: 'image/jpeg',
+	}
 	try {
-		if(!req.file) {
+		if(!pic) {
 			return res
 				.status(412)
 				.json({ message: 'Picture not found.' })
-		}	
+		}
+		const storageRef = ref(myStorage, `Especies/${pic.originalname}`)
+		const snapshot = await uploadBytes(storageRef, pic.buffer, metadata)
+		newSpecie.picture = `https://storage.googleapis.com/${snapshot.metadata.bucket}/${snapshot.metadata.name}`
 
-		const blob = bucket.file(`Especies/${req.file.originalname}`)
-		const blobStream = blob.createWriteStream()
-		blobStream.on('finish', async () => {
-			const publicUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`)
-			newSpecie.picture = publicUrl
-
-			const specie: FirebaseFirestore.WriteResult = 
-                await speciesCollection.doc().set(newSpecie)
-
-			if(!(specie.writeTime.seconds > 0)) {
-				return res
-					.status(400)
-					.json({ message: 'Unsuccessful.' })
-			}
+		const specie: FirebaseFirestore.WriteResult = 
+            await speciesCollection.doc().set(newSpecie)
+        
+		if(specie.writeTime.seconds <= 0) {
 			return res
-				.status(200)
-				.json({ message: 'Success' })
-		})
-		blobStream.end(req.file.buffer)
+				.status(400)
+				.json({ message: 'Unsuccessful.' })
+		}
+		return res
+			.status(200)
+			.json({ message: 'Success' })
 
 	} catch (error: any) {
 		return res
@@ -90,17 +91,27 @@ export const deleteSpecie: RequestHandler = async (req, res) => {
 	const specieId: string  = req.params.id
 	try {
 		if (!specieId) {
-			return res.status(412).json({ message: 'Incorrect ID.' })
+			return res
+				.status(412)
+				.json({ message: 'Incorrect ID.' })
 		}
 		const mySpecie: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
 			await speciesCollection.doc(`${specieId}`).get()
-
-		if (!mySpecie.exists) {
-			return res.status(412).json({ message: 'Specie not found.' })
+		const specieCopy: FirebaseFirestore.DocumentData | undefined = mySpecie.data()
+		if (!mySpecie.exists || !specieCopy) {
+			return res
+				.status(412)
+				.json({ message: 'Specie not found.' })
 		}
 		await speciesCollection.doc(specieId).delete()
+		const namePicture: Array<string> = specieCopy.picture.split('/')
 		
-		return res.status(200).json({ message: 'Deleted successfully.' })
+		const storageRef = ref(myStorage, `Especies/${namePicture[namePicture.length - 1]}`)
+		await deleteObject(storageRef)
+	
+		return res
+			.status(200)
+			.json({ message: 'Deleted successfully.' })
 	} catch (error: any) {
 		return res
 			.status(500)
@@ -112,42 +123,45 @@ export const deleteSpecie: RequestHandler = async (req, res) => {
 // PATCH -> "/specie" modify a specific specie
 export const editSpecie: RequestHandler = async (req, res) => {
 	const editSpecie: UpdateSpecie = req.body
+	const pic: Express.Multer.File | undefined = req.file
+	const metadata = {
+		contentType: 'image/jpeg',
+	}
+	let defaultPicName = ''
 	try {
 		if (!editSpecie.id) {
-			return res.status(412).json({ message: 'Must provide an ID.' }) 
+			return res
+				.status(412)
+				.json({ message: 'Must provide an ID.' }) 
 		}
-        
-
-		if (req.file) {
-			console.log('con archivo')
-			const blob = bucket.file(`Especies/${req.file.originalname}`)
-			const blobStream = blob.createWriteStream()
-			blobStream.on('finish', async () => {
-				const publicUrl = format(`https://storage.googleapis.com/${bucket.name}/${blob.name}`)
-				editSpecie.picture = publicUrl
-
-				const result = await speciesCollection.doc(editSpecie.id!).update(editSpecie)
-				console.log(result)
-				return res.status(200).json({ message: 'Working, picture updated.' })
-			})
-			blobStream.end(req.file.buffer)
-		} else {
-			console.log('sin archivo')
-			console.log(editSpecie)
-			return res.status(200).json({ message: 'Working, without picture.' })
+		// Comprobamos si existe
+		const mySpecie: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
+			await speciesCollection.doc(`${editSpecie.id}`).get()
+		if(!mySpecie.exists) {
+			return res
+				.status(412)
+				.json({ message: 'Specie not found.' })
 		}
-
-	
-		/* 
-     - Comprobar si viene foto
-     - Si viene la subimos a Storage
-     - Añadimos la url al objeto editSpecie
-     - Eliminamos la foto anterior
-     - Actualizamos en firestorage la ficha de especie
-    */
-	
-		/* const result = speciesCollection.doc(editSpecie.id!).update({}) */
-		
+		// Extraemos el nombre de la imagen asociada
+		const specieCopy: FirebaseFirestore.DocumentData | undefined = mySpecie.data()
+		const namePicture: Array<string> = specieCopy!.picture.split('/')
+		// Si hemos añadido imagen para cambiar
+		if (pic) {
+			const storageRef = ref(myStorage, `Especies/${pic.originalname}`)
+			const snapshot = await uploadBytes(storageRef, pic.buffer, metadata)
+			editSpecie.picture = `https://storage.googleapis.com/${snapshot.metadata.bucket}/${snapshot.metadata.name}`
+			defaultPicName = snapshot.metadata.name
+		}
+		// Actualizamos el objeto
+		await speciesCollection.doc(editSpecie.id!).update(editSpecie)
+		// Eliminamos la foto antigua si la añadida es diferente
+		if (namePicture[namePicture.length -1] !== defaultPicName) {
+			const storageRef = ref(myStorage, `Especies/${namePicture[namePicture.length - 1]}`)
+			await deleteObject(storageRef)
+		}
+		return res
+			.status(200)
+			.json({ message: 'Updated successfully.' })
 	} catch (error: any) {
 		return res
 			.status(500)
@@ -155,3 +169,8 @@ export const editSpecie: RequestHandler = async (req, res) => {
 	}
 	
 }
+
+/* export const testingSpecies: RequestHandler = (req, res) => {
+
+	return res.status(200).json({ message: 'working!!' })
+} */
