@@ -74,49 +74,17 @@ export const signInUser: RequestHandler = async (req, res) => {
 	}
 }
 
-/* En construcción */
-export const editProfile: RequestHandler = async (req, res) => {
-
-	try {
-
-		return res.status(200).json({ message: 'Starting!!' })
-	} catch (error: any) {
-		return res.status(400).json({ message: error.message })
-	}
-	
-}
-
 export const rememberPassword: RequestHandler = async (req, res) => {
+	const { email, id, password }: any = req.body
+	console.log({ email, id, password })
 	return res.status(200).json({ message: 'Starting!!' })
 }
-/* En construcción */
 
-// Delete User -> "/profile"
-/* export const deleteUser: RequestHandler = async (req, res) => {
-	const { id, email } = req.body
-
-	try {
-		await usersCollection.doc(id).delete()
-
-		return res.status(200).json({ message: 'User deleted', user: email })
-	} catch (error: any) {
-		return res.status(400).json({ message: error.message })
-	}
-} */
-
-// Get User By ID -> "/profile/:id"
-/* export const getUserBy: RequestHandler = async (req, res) => {
-	const { id } = req.params
-
-	try {
-		if(!id) {
-			return res.status(412).json({ message: 'Incorrect ID.' })
-		}
-		const myUser: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
-			await usersCollection.doc(`${id}`).get()
-		
-		return res.status(200).json({ message: 'User found.', user: myUser.data() })
-	} catch (error: any) {
-		return res.status(400).json({ message: error.message })
-	}
-} */
+/* 
+Ruta para recordar contraseña:
+- Recibe un email.
+- Manda a ese email un enlace con el token en la URL.
+- Si accedes desde esa URL, se lee el token.
+- Verificado el token te da la opción de setear una nueva contraseña.
+- Construcción de una ruta para cambiar el password.
+*/

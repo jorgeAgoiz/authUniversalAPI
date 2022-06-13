@@ -1,7 +1,5 @@
 import { RequestHandler } from 'express'
-import { format } from 'util'
 import { Specie, UpdateSpecie } from '../types/data'
-import { bucket } from '../utils/firebase.storage'
 import { db } from '../utils/firebaseDb'
 import { ref, uploadBytes, deleteObject } from '@firebase/storage'
 import { myStorage } from '../utils/firebaseStorage'
@@ -134,7 +132,6 @@ export const editSpecie: RequestHandler = async (req, res) => {
 				.status(412)
 				.json({ message: 'Must provide an ID.' }) 
 		}
-		// Comprobamos si existe
 		const mySpecie: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
 			await speciesCollection.doc(`${editSpecie.id}`).get()
 		if(!mySpecie.exists) {
@@ -142,19 +139,15 @@ export const editSpecie: RequestHandler = async (req, res) => {
 				.status(412)
 				.json({ message: 'Specie not found.' })
 		}
-		// Extraemos el nombre de la imagen asociada
 		const specieCopy: FirebaseFirestore.DocumentData | undefined = mySpecie.data()
 		const namePicture: Array<string> = specieCopy!.picture.split('/')
-		// Si hemos añadido imagen para cambiar
 		if (pic) {
 			const storageRef = ref(myStorage, `Especies/${pic.originalname}`)
 			const snapshot = await uploadBytes(storageRef, pic.buffer, metadata)
 			editSpecie.picture = `https://storage.googleapis.com/${snapshot.metadata.bucket}/${snapshot.metadata.name}`
 			defaultPicName = snapshot.metadata.name
 		}
-		// Actualizamos el objeto
 		await speciesCollection.doc(editSpecie.id!).update(editSpecie)
-		// Eliminamos la foto antigua si la añadida es diferente
 		if (namePicture[namePicture.length -1] !== defaultPicName) {
 			const storageRef = ref(myStorage, `Especies/${namePicture[namePicture.length - 1]}`)
 			await deleteObject(storageRef)
@@ -167,7 +160,6 @@ export const editSpecie: RequestHandler = async (req, res) => {
 			.status(500)
 			.json({ message: 'Something went wrong.', error: error.message })
 	}
-	
 }
 
 /* export const testingSpecies: RequestHandler = (req, res) => {

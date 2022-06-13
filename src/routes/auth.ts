@@ -1,24 +1,15 @@
-import express from 'express'
+import express, { Router } from 'express'
 import { 
 	signUpUser, 
-	signInUser, 
-	editProfile, 
-	/* deleteUser, */ 
-	rememberPassword, 
-	/* getUserBy  */
+	signInUser,
+	rememberPassword,
 } from '../controllers/auth'
 import { verifyToken } from '../middlewares/auth'
 
-const authRouter = express.Router()
+const authRouter: Router = express.Router()
 
 authRouter.post('/signup', signUpUser)
 authRouter.post('/signin', signInUser)
-
 authRouter.post('/profile', verifyToken, rememberPassword)
-authRouter.patch('/profile', verifyToken, editProfile)
-/* authRouter.delete('/profile', verifyToken, deleteUser) */
-
-/* authRouter.get('/profile/:id', verifyToken, getUserBy) */
-
 
 export default authRouter

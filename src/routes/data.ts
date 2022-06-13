@@ -1,8 +1,8 @@
-import express from 'express'
+import express, { Router } from 'express'
 import { saveSpecie, getSpecies, deleteSpecie, editSpecie } from '../controllers/data'
 import { multer } from '../middlewares/multer'
 
-const dataRouter = express.Router()
+const dataRouter: Router = express.Router()
 
 dataRouter.post('/specie',multer, saveSpecie)
 dataRouter.get('/specie', getSpecies)
