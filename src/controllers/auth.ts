@@ -139,16 +139,15 @@ export const rememberPassword: RequestHandler = async (req, res) => {
 
 // POST -> '/refresh-token' send new tokens
 export const refreshTokens: RequestHandler = async (req, res) => {
-	
+	const refrToken: string | undefined = req.body.refrToken
 	try {
-		const refrToken: string | undefined = req.body.refrToken
 		if(!refrToken) {
 			return res
 				.status(412)
 				.json({ message: 'Must provide refresh token.' })
 		}
 		const decoded: any = jwt.verify(refrToken, JWT_SECRET)
-		console.log(decoded)
+		
 		const userExists: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
 			await usersCollection.doc(decoded.id).get()
 		if (!userExists.exists) {
@@ -163,6 +162,11 @@ export const refreshTokens: RequestHandler = async (req, res) => {
 			.status(200)
 			.json({ message: 'Tokens Refreshed', token, refreshToken })
 	} catch (error: any) {
+		if(error instanceof TokenExpiredError){
+			return res
+				.status(401)
+				.json({ message: error.message, expired: true })
+		}
 		return res
 			.status(400)
 			.json({ message: 'Something went wrong.', error: error.message })

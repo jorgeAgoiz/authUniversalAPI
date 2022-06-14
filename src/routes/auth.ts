@@ -4,7 +4,7 @@ import {
 	signInUser,
 	rememberPassword,
 } from '../controllers/auth'
-import { verifyToken } from '../middlewares/authToken'
+/* import { verifyToken } from '../middlewares/authToken' */
 import { refreshTokens } from '../controllers/auth'
 
 const authRouter: Router = express.Router()

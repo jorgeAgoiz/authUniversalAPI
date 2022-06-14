@@ -5,7 +5,6 @@ import { ref, uploadBytes, deleteObject } from '@firebase/storage'
 import { myStorage } from '../utils/firebaseStorage'
 
 const speciesCollection = db.collection('Species')
-// Implementar a todas las rutas el TOKEN JWT
 
 // POST -> "/specie" save a specie
 export const saveSpecie: RequestHandler = async (req, res) => {

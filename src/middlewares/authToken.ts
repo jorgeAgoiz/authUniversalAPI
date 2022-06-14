@@ -45,5 +45,3 @@ export const verifyToken: RequestHandler = async ( req, res, next ) => {
 			.json({ message: error.message })
 	}
 }
-
-/* Si el token esta expirsado mandamos un status 401 con un json personalizado */

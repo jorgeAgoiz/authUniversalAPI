@@ -7,7 +7,14 @@ import {
 	AUTH_DOMAIN_FIREBASE 
 } from './env.vars'
 
-const firebaseConfig = {
+interface fbConfig {
+	apiKey: string,
+	authDomain: string,
+	databaseURL: string,
+	storageBucket: string
+}
+
+const firebaseConfig: fbConfig = {
 	apiKey: APIKEY_FIREBASE,
 	authDomain: AUTH_DOMAIN_FIREBASE,
 	databaseURL: DATABASE_URL,
