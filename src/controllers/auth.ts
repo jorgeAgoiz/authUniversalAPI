@@ -4,6 +4,8 @@ import bcrypt from 'bcrypt'
 import { db } from '../utils/firebaseDb'
 import { FieldValue } from 'firebase-admin/firestore'
 import { createToken } from '../utils/jwtAuth'
+import { transporter } from '../utils/nodemailer.config'
+import { USER } from '../utils/env.vars'
 
 const usersCollection = db.collection('users')
 
@@ -43,7 +45,9 @@ export const signUpUser: RequestHandler = async (req, res) => {
 			.json({ result: 'User created' }) 
 
 	} catch (error: any) {
-		return res.status(400).json({ message: error.message })
+		return res
+			.status(400)
+			.json({ message: 'Something went wrong.', error: error.message })
 	}
 }
 
@@ -51,10 +55,17 @@ export const signUpUser: RequestHandler = async (req, res) => {
 export const signInUser: RequestHandler = async (req, res) => {
 	const { email, password }: LogUser = req.body
 	try {
+		if (!email || !password) {
+			return res
+				.status(412)
+				.json({ message: 'Incomplete data.' })
+		}
 		const user: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData> = 
 			await usersCollection.where('email', '==', email).get()
 		if (user.empty) {
-			return res.status(412).json({ message: 'Email incorrect' })
+			return res
+				.status(412)
+				.json({ message: 'Email incorrect' })
 		}
 		const userData: LogUserDB = {
 			id: user.docs[0].id,
@@ -64,20 +75,64 @@ export const signInUser: RequestHandler = async (req, res) => {
 		const passwordHashed: string = user.docs[0].data().password
 		const correctPassword: boolean = await bcrypt.compare(password, passwordHashed)
 		if (!correctPassword) {
-			return res.status(401).json({ message: 'Incorrect password' })	
+			return res
+				.status(401)
+				.json({ message: 'Incorrect password' })	
 		}
 		const token: string = createToken(userData.id, userData.email)
 		
-		return res.status(200).json({ message: 'Correct Login', token })
+		return res
+			.status(200)
+			.json({ message: 'Correct Login', token })
 	} catch (error:any) {
-		return res.status(400).json({ message: error.message })
+		return res
+			.status(400)
+			.json({ message: 'Something went wrong.', error: error.message })
 	}
 }
 
+// POST -> '/profile' send me email yo reset password
 export const rememberPassword: RequestHandler = async (req, res) => {
-	const { email, id, password }: any = req.body
-	console.log({ email, id, password })
-	return res.status(200).json({ message: 'Starting!!' })
+	const email: string | undefined = req.body.email
+	try {
+		if (!email) {
+			return res
+				.status(412)
+				.json({ message: 'Must provide an Email.' })
+		}
+		
+		const users: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData> = 
+			await usersCollection.where('email', '==', email).limit(1).get()
+		if (users.empty) {
+			return res
+				.status(412)
+				.json({ message: 'Email incorrect' })
+		}
+		const idUser: string = users.docs[0].id!
+		const token: string = createToken(idUser, email)
+
+		// Si figura se le manda un email con una URL y el token como param
+		const mailSended = await transporter.sendMail({
+			from: `"Jorge Luis Agoiz Website Dashboard" ${USER}`,
+			to: email,
+			subject: 'Resetea tu contraseña',
+			html: `
+		  		<h1>Resetear Contraseña</h1>
+		  		<p>
+		  		Haz click en el siguiente enlace para resetear tu contraseña: 
+				${token}
+		  		${'www.google.com'}
+		  		</p>
+		  		` /****** AJUSTAR ENLACE Incluyendo el ID en la petición para el front*/,
+		})
+		return res
+			.status(200)
+			.json({ message: 'Email sended.', response: mailSended.response })
+	} catch (error: any) {
+		return res
+			.status(400)
+			.json({ message: 'Something went wrong.', error: error.message })
+	}
 }
 
 /* 

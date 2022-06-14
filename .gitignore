@@ -105,3 +105,6 @@ dist
 
 # Firebase Credentials
 src/utils/firebase.json
+
+# Build Folder
+build/

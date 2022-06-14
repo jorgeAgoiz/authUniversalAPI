@@ -38,7 +38,7 @@ export const saveSpecie: RequestHandler = async (req, res) => {
 
 	} catch (error: any) {
 		return res
-			.status(500)
+			.status(400)
 			.json({ message: 'Something went wrong.', error: error.message })
 	}
 }
@@ -78,7 +78,7 @@ export const getSpecies: RequestHandler = async ( req, res) => {
 		})  
 	} catch (error: any) {
 		return res
-			.status(500)
+			.status(400)
 			.json({ message: 'Something went wrong.', error: error.message })
 	}
 
@@ -112,7 +112,7 @@ export const deleteSpecie: RequestHandler = async (req, res) => {
 			.json({ message: 'Deleted successfully.' })
 	} catch (error: any) {
 		return res
-			.status(500)
+			.status(400)
 			.json({ message: 'Something went wrong.', error: error.message })
 	}
 	
@@ -157,12 +157,7 @@ export const editSpecie: RequestHandler = async (req, res) => {
 			.json({ message: 'Updated successfully.' })
 	} catch (error: any) {
 		return res
-			.status(500)
+			.status(400)
 			.json({ message: 'Something went wrong.', error: error.message })
 	}
 }
-
-/* export const testingSpecies: RequestHandler = (req, res) => {
-
-	return res.status(200).json({ message: 'working!!' })
-} */

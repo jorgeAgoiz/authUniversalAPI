@@ -4,12 +4,12 @@ import {
 	signInUser,
 	rememberPassword,
 } from '../controllers/auth'
-import { verifyToken } from '../middlewares/auth'
+import { verifyToken } from '../middlewares/authToken'
 
 const authRouter: Router = express.Router()
 
 authRouter.post('/signup', signUpUser)
 authRouter.post('/signin', signInUser)
-authRouter.post('/profile', verifyToken, rememberPassword)
+authRouter.post('/profile', rememberPassword)
 
 export default authRouter

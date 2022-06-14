@@ -1,12 +1,9 @@
 import { RequestHandler } from 'express'
 import jwt from 'jsonwebtoken'
-import dotenv from 'dotenv'
 import { db } from '../utils/firebaseDb'
+import { JWT_SECRET } from '../utils/env.vars'
 
-if (process.env.NODE_ENV !== 'production') {
-	dotenv.config()
-}
-const SECRET: string = process.env.SECRET_JWT!
+
 const usersCollection = db.collection('users')
 
 export const verifyToken: RequestHandler = async ( req, res, next ) => {
@@ -25,7 +22,7 @@ export const verifyToken: RequestHandler = async ( req, res, next ) => {
 		}
   
 		const token: string = authorization.substring(7)
-		const decoded: any = jwt.verify(token, SECRET)
+		const decoded: any = jwt.verify(token, JWT_SECRET)
         
 		const userExists: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
 			await usersCollection.doc(decoded.id).get()
