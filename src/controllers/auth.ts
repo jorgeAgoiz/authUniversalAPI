@@ -1,11 +1,12 @@
 import { RequestHandler } from 'express'
 import { LogUser, NewUserDB, NewUser, LogUserDB } from '../types/auth'
 import bcrypt from 'bcrypt'
+import jwt, { TokenExpiredError } from 'jsonwebtoken'
 import { db } from '../utils/firebaseDb'
 import { FieldValue } from 'firebase-admin/firestore'
-import { createToken } from '../utils/jwtAuth'
+import { createToken, createRefreshToken } from '../utils/jwtAuth'
 import { transporter } from '../utils/nodemailer.config'
-import { USER } from '../utils/env.vars'
+import { USER, JWT_SECRET } from '../utils/env.vars'
 
 const usersCollection = db.collection('users')
 
@@ -80,10 +81,11 @@ export const signInUser: RequestHandler = async (req, res) => {
 				.json({ message: 'Incorrect password' })	
 		}
 		const token: string = createToken(userData.id, userData.email)
+		const refreshToken: string = createRefreshToken(userData.id, userData.email)
 		
 		return res
 			.status(200)
-			.json({ message: 'Correct Login', token })
+			.json({ message: 'Correct Login', token, refreshToken })
 	} catch (error:any) {
 		return res
 			.status(400)
@@ -134,6 +136,45 @@ export const rememberPassword: RequestHandler = async (req, res) => {
 			.json({ message: 'Something went wrong.', error: error.message })
 	}
 }
+
+// POST -> '/refresh-token' send new tokens
+export const refreshTokens: RequestHandler = async (req, res) => {
+	
+	try {
+		const refrToken: string | undefined = req.body.refrToken
+		if(!refrToken) {
+			return res
+				.status(412)
+				.json({ message: 'Must provide refresh token.' })
+		}
+		const decoded: any = jwt.verify(refrToken, JWT_SECRET)
+		console.log(decoded)
+		const userExists: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = 
+			await usersCollection.doc(decoded.id).get()
+		if (!userExists.exists) {
+			return res
+				.status(404)
+				.json({ message: 'User not found' })
+		}
+		const token: string = createToken(decoded.id, decoded.email)
+		const refreshToken: string = createRefreshToken(decoded.id, decoded.email)
+
+		return res
+			.status(200)
+			.json({ message: 'Tokens Refreshed', token, refreshToken })
+	} catch (error: any) {
+		return res
+			.status(400)
+			.json({ message: 'Something went wrong.', error: error.message })
+	}
+}
+
+/* 
+Ruta para refrescar el token:
+- Darle una vuelta al manejo de errores en este endpoint, hacer algo homogeneo.
+*/
+
+
 
 /* 
 Ruta para recordar contraseña:

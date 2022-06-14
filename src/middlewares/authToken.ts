@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express'
-import jwt from 'jsonwebtoken'
+import jwt, { TokenExpiredError } from 'jsonwebtoken'
 import { db } from '../utils/firebaseDb'
 import { JWT_SECRET } from '../utils/env.vars'
 
@@ -35,6 +35,15 @@ export const verifyToken: RequestHandler = async ( req, res, next ) => {
 		req.body.email = userExists.data()!.email
 		next()
 	} catch (error: any) {
-		return res.status(400).json({ message: error.message })
+		if(error instanceof TokenExpiredError){
+			return res
+				.status(401)
+				.json({ message: error.message, expired: true })
+		}
+		return res
+			.status(400)
+			.json({ message: error.message })
 	}
 }
+
+/* Si el token esta expirsado mandamos un status 401 con un json personalizado */
